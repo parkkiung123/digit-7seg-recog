@@ -6,6 +6,7 @@ MyCam::MyCam(QWidget *parent) :
     ui(new Ui::MyCam)
 {
     ui->setupUi(this);
+    ui->centralWidget->setAttribute(Qt::WA_TransparentForMouseEvents);
     scene = new QGraphicsScene(this);
     ui->graphicsView->setScene(scene);
     QPixmap input("C:\\Users\\parkk\\Pictures\\lena.png");
@@ -20,22 +21,35 @@ MyCam::~MyCam()
     delete ui;
 }
 
-void MyCam::mousePosJudge(QMouseEvent* evt)
+bool MyCam::mousePosJudge(QMouseEvent* evt)
 {
-    QPointF clickedPoint = evt->windowPos();
-    int dx = clickedPoint.x() - ui->graphicsView->pos().x();
-    int dy = clickedPoint.y() - ui->graphicsView->pos().y();
-    m_dx = dx;
-    m_dy = dy;
-    m_judge = dx > 0 && dx < ui->graphicsView->width() &&
-              dy > 0 && dy < ui->graphicsView->height();
+    m_dx = evt->windowPos().x() - ui->graphicsView->pos().x();
+    m_dy = evt->windowPos().y() - ui->graphicsView->pos().y();
+    return m_dx > 0 && m_dx < ui->graphicsView->width() &&
+           m_dy > 0 && m_dy < ui->graphicsView->height();
 }
 
 void MyCam::mousePressEvent(QMouseEvent* evt)
 {
-    mousePosJudge(evt);
-    if (m_judge)
+    if (evt->buttons() & Qt::LeftButton && mousePosJudge(evt))
     {
-        scene->addEllipse(m_dx, m_dy, 10, 10, QPen(Qt::green), QBrush(Qt::green));
+        offset = QPointF(m_dx, m_dy);
+        qDebug() << offset;
     }
+}
+
+void MyCam::mouseMoveEvent(QMouseEvent* evt)
+{
+    if (evt->buttons() & Qt::LeftButton && mousePosJudge(evt))
+    {
+        mousePos = QPointF(m_dx, m_dy);
+        qDebug() << mousePos;
+    }
+}
+
+void MyCam::mouseReleaseEvent(QMouseEvent* evt)
+{
+    mouseBox.setTopLeft(offset);
+    mouseBox.setBottomRight(mousePos);
+    scene->addRect(mouseBox, QPen(Qt::red), QBrush());
 }

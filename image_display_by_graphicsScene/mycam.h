@@ -4,6 +4,7 @@
 #include <QMainWindow>
 #include <QGraphicsScene>
 #include <QMouseEvent>
+#include <QDebug>
 
 namespace Ui {
 class MyCam;
@@ -18,14 +19,18 @@ public:
     ~MyCam();    
 
 protected:
-    void mousePressEvent(QMouseEvent*);
+    void mousePressEvent(QMouseEvent*) override;
+    void mouseMoveEvent(QMouseEvent*) override;
+    void mouseReleaseEvent(QMouseEvent*) override;
 
 private:
     Ui::MyCam *ui;
     QGraphicsScene *scene;
-    int m_dx, m_dy;
-    bool m_judge;
-    void mousePosJudge(QMouseEvent*);
+    int m_dx;
+    int m_dy;
+    QPointF offset, mousePos;
+    QRectF mouseBox;
+    bool mousePosJudge(QMouseEvent*);
 };
 
 #endif // MYCAM_H
