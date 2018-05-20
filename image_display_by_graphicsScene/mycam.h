@@ -3,6 +3,7 @@
 
 #include <QMainWindow>
 #include <QGraphicsScene>
+#include <QGraphicsItem>
 #include <QMouseEvent>
 #include <QDebug>
 
@@ -16,21 +17,26 @@ class MyCam : public QMainWindow
 
 public:
     explicit MyCam(QWidget *parent = 0);
-    ~MyCam();    
+    ~MyCam();
 
 protected:
     void mousePressEvent(QMouseEvent*) override;
     void mouseMoveEvent(QMouseEvent*) override;
-    void mouseReleaseEvent(QMouseEvent*) override;
 
 private:
     Ui::MyCam *ui;
     QGraphicsScene *scene;
+    QGraphicsRectItem *selection;
+    QPixmap image;
+    QPointF offset;
+    QRectF mouseBox;
+    QPen qpen;
     int m_dx;
     int m_dy;
-    QPointF offset, mousePos;
-    QRectF mouseBox;
     bool mousePosJudge(QMouseEvent*);
+
+private slots:
+    void saveImage();
 };
 
 #endif // MYCAM_H

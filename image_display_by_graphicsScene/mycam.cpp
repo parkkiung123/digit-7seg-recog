@@ -6,14 +6,21 @@ MyCam::MyCam(QWidget *parent) :
     ui(new Ui::MyCam)
 {
     ui->setupUi(this);
-    ui->centralWidget->setAttribute(Qt::WA_TransparentForMouseEvents);
     scene = new QGraphicsScene(this);
+    ui->graphicsView->setAttribute(Qt::WA_TransparentForMouseEvents);
     ui->graphicsView->setScene(scene);
-    QPixmap input("C:\\Users\\parkk\\Pictures\\lena.png");
-    ui->graphicsView->resize(input.width(), input.height());
+    image = QPixmap("C:\\Users\\parkk\\Pictures\\lena.png");
+    ui->graphicsView->resize(image.width(), image.height());
     ui->graphicsView->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     ui->graphicsView->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    scene->addPixmap(input);
+    scene->addPixmap(image);
+
+    selection = scene->addRect(QRectF(0, 0, 0, 0), qpen, QBrush());
+    qpen = QPen(Qt::green);
+    qpen.setWidth(3);
+    selection->setPen(qpen);
+
+    connect(ui->pushButton, SIGNAL(clicked()), this, SLOT(saveImage()));
 }
 
 MyCam::~MyCam()
@@ -34,7 +41,6 @@ void MyCam::mousePressEvent(QMouseEvent* evt)
     if (evt->buttons() & Qt::LeftButton && mousePosJudge(evt))
     {
         offset = QPointF(m_dx, m_dy);
-        qDebug() << offset;
     }
 }
 
@@ -42,14 +48,20 @@ void MyCam::mouseMoveEvent(QMouseEvent* evt)
 {
     if (evt->buttons() & Qt::LeftButton && mousePosJudge(evt))
     {
-        mousePos = QPointF(m_dx, m_dy);
-        qDebug() << mousePos;
+        mouseBox.setTopLeft(offset);
+        mouseBox.setBottomRight(QPointF(m_dx-3, m_dy-3));
+        selection->setRect(mouseBox);
     }
 }
 
-void MyCam::mouseReleaseEvent(QMouseEvent* evt)
+void MyCam::saveImage()
 {
-    mouseBox.setTopLeft(offset);
-    mouseBox.setBottomRight(mousePos);
-    scene->addRect(mouseBox, QPen(Qt::red), QBrush());
+    if (mouseBox.width() > 0 && mouseBox.height() > 0)
+    {
+        QPixmap ROI = image.copy(mouseBox.toRect());
+        qDebug() << ROI.save("tmp.jpg");
+    } else
+    {
+        qDebug() << "set ROI";
+    }
 }
